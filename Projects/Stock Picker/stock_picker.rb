@@ -17,13 +17,13 @@ def stock_picker_v2(stock_prices)
   stock_prices.each_with_index do |buy_price, i|
     sell_index = i + 1
 
-    until (sell_index) >= stock_prices.length  # stops when the sell_index variable (used as an index) reaches the end of the stock_prices array
+    until (sell_index) >= stock_prices.length  # stops when the sell_index variable reaches the end of the stock_prices array
       if (stock_prices[sell_index] - buy_price) > (best_days[1]) - (best_days[0])  #if (profit of current evalutaion) is greater than (profit stored in best_days)
         best_days[0] = buy_price                                           # set the first value of the best_days array to the price (buy price)
         best_days[1] = stock_prices[sell_index]                              # set the second value of the best_days array to the the number in the stock_prices array at the index of sell_index (sell_price)
       end
 
-      sell_index += 1    # iterates a long the stock_prices array
+      sell_index += 1    # iterates along the stock_prices array
     end
   end
 
