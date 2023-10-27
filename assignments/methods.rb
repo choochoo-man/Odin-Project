@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 # Write a program that prints a greeting message. This program should contain a method called greeting that takes a name as its parameter and returns a string.
 
 def greet(name)
-  "Hello, " + name + ", nice to meet you"
+  "Hello, #{name}, nice to meet you"
 end
 
-puts greet("Daniel")
+puts greet('Daniel')
 
 # Write a program that includes a method called multiply that takes two arguments and returns the product of the two numbers.
 
