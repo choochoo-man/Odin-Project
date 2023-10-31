@@ -1,0 +1,23 @@
+
+[1mFrom:[0m /home/daniel/Desktop/odin_project/projects/mastermind/mastermind.rb:88 Object#decode:
+
+    [1;34m76[0m: [32mdef[0m [1;34mdecode[0m(board, turns, secretcode, slots, colours)
+    [1;34m77[0m:   displayboard = board.map(&[33m:compact[0m).reject(&[33m:empty?[0m)
+    [1;34m78[0m:   turns.each [32mdo[0m |turn|
+    [1;34m79[0m:     [32mif[0m [1;36mself[0m.correctcode?(board, turn, secretcode)
+    [1;34m80[0m:       puts [31m[1;31m"[0m[31mCode cracked![1;31m"[0m[31m[0m
+    [1;34m81[0m:       puts board[turn - [1;34m2[0m].join([31m[1;31m"[0m[31m [1;31m"[0m[31m[0m)
+    [1;34m82[0m:       [32mbreak[0m
+    [1;34m83[0m:     [32mend[0m   
+    [1;34m84[0m:     slots.each [32mdo[0m |slot|
+    [1;34m85[0m:       [32mif[0m board[turn - [1;34m1[0m][slot] != secretcode[slot]
+    [1;34m86[0m:         guess = colours.sample
+    [1;34m87[0m:         board[turn - [1;34m1[0m][slot] = guess
+ => [1;34m88[0m:         binding.pry
+    [1;34m89[0m:       [32mend[0m
+    [1;34m90[0m:     [32mend[0m
+    [1;34m91[0m:     puts [31m[1;31m"[0m[31mHere is the current board state on turn #{turn}[0m[31m[1;31m"[0m[31m[0m
+    [1;34m92[0m:     displayboard.each {|play| puts play.join([31m[1;31m"[0m[31m [1;31m"[0m[31m[0m)}
+    [1;34m93[0m:   [32mend[0m
+    [1;34m94[0m: [32mend[0m
+

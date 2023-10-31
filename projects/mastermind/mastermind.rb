@@ -1,10 +1,19 @@
 # 12 turns, 6 colours, 4 slots for each turn
+require 'pry'
 
 turns = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-secretcode = ["red", "red", "blue", "green"]
-colours = ["red", "blue", "green", "purple", "yellow", "orange"]
 
-board = 
+secretcode = %w[red red blue green]
+
+colours = %w[red blue green purple yellow orange]
+
+slots = [0, 1, 2, 3]
+
+answer = nil
+
+guess = 'red'
+
+board =
   [[nil, nil, nil, nil],
    [nil, nil, nil, nil],
    [nil, nil, nil, nil],
@@ -19,105 +28,112 @@ board =
    [nil, nil, nil, nil]]
 
 def correctcode?(board, turn, secretcode)
-  if secretcode == board[turn - 2]
-    return true
+  return true if secretcode == board[turn - 2]
 
+  false
+end
+
+def position(board, turn, colours, slots)
+  puts "please choose a colour for position #{slots + 1} (red, green, blue, yellow, orange or purple)"
+  pos = gets.chomp
+  if colours.include?(pos)
+    board[turn - 1][slots] = pos
   else
-    return false
+    puts 'Must pick red, green, blue, yellow, orange or purple'
+    position(board, turn, colours, slots)
   end
 end
 
-def positionone(board, turn, colours)
-  puts "please choose a colour for position 1"
-  pos_one = gets.chomp
-  if colours.include?(pos_one)
-    board[turn - 1][0] = pos_one
+def check(board, turn, secretcode, slots)
+  puts "Position #{slots + 1} is the correct colour" if board[turn - 1][slots] == secretcode[slots]
+
+  return unless board[turn - 1][slots] != secretcode[slots] && secretcode.include?(board[turn - 1][slots])
+
+  puts "Position #{slots + 1} colour is used but not here"
+end
+
+def pick(answer, board, turns, secretcode, slots, colours, guess)
+  puts "Would you like to set the code, or break it? (type 'Set' or 'Break')"
+  answer = gets.chomp
+  unless answer.downcase == 'set' || answer.downcase == 'break'
+    puts "Must pick 'Set' or 'Break'"
+    return pick(answer, board, turns, secretcode, slots, colours, guess)
+  end
+  setcode(board, turns, secretcode, slots, colours, guess) if answer.downcase == 'set'
+  return unless answer.downcase == 'break'
+
+  breakcode(board, turns, secretcode, slots, colours)
+end
+
+def decodecheck; end
+
+def decode(board, turns, secretcode, slots, colours, guess)
+  solution = [nil, nil, nil, nil]
+
+  turns.each do |turn|
+    if solution == secretcode
+      puts 'Code cracked!'
+      puts solution.join(' ')
+      break
+    end
+
+    slots.each do |slot|
+      guess = colours.sample
+
+      unless solution[slot] == secretcode[slot]
+      solution[slot] = guess
+      end
+    end
+
+    puts "Here is the current board state on turn #{turn}"
+    pp solution
+  end
+end
+
+def setcode(board, turns, secretcode, slots, colours, guess)
+  slots.each { |slots| setsecretcode(board, turns, secretcode, colours, slots) }
+  puts "Would you like to break the code yourself, or have the program (type 'Me' or 'Program')"
+  answer = gets.chomp
+  unless answer.downcase == 'me' || answer.downcase == 'program'
+    puts "Must pick 'Me' or 'Program'"
+    return setcode(board, turns, secretcode, slots, colours, guess)
+  end
+  decode(board, turns, secretcode, slots, colours, guess) if answer.downcase == 'program'
+  return unless answer.downcase == 'me'
+
+  breakcode(board, turns, secretcode, slots, colours)
+end
+
+def setsecretcode(board, turns, secretcode, colours, slots)
+  puts "please choose a colour for position #{slots + 1} (red, green, blue, yellow, orange or purple)"
+  pos = gets.chomp
+  if colours.include?(pos)
+    secretcode[slots] = pos
   else
-    puts "Must pick red, green, blue, yellow, orange or purple"
-    return self.positionone(board, turn, colours)
+    puts 'Must pick red, green, blue, yellow, orange or purple'
+    self.setsecretcode(board, turns, secretcode, colours, slots)
   end
 end
 
-def positiontwo(board, turn, colours)
-  puts "please choose a colour for position 2"
-  pos_two = gets.chomp
-  if colours.include?(pos_two)
-    board[turn - 1][1] = pos_two
-  else
-    puts "Must pick red, green, blue, yellow, orange or purple"
-    return self.positiontwo(board, turn, colours)
+def breakcode(board, turns, secretcode, slots, colours)
+  turns.each do |turn|
+    displayboard = board.map(&:compact).reject(&:empty?)
+
+    if correctcode?(board, turn, secretcode)
+      puts 'You have correctly guessed the code!'
+      puts board[turn - 2].join(' ')
+      break
+    end
+    unless turn == 1
+      puts '- * - * - * - * - * - * - * - * - * - * - * -'
+      puts "Here is the current board state on turn #{turn}"
+      displayboard.each { |play| puts play.join(' ') }
+    end
+
+    slots.each { |slots| position(board, turn, colours, slots) }
+
+    slots.each { |slots| check(board, turn, secretcode, slots) }
   end
 end
 
-def positionthree(board, turn, colours)
-  puts "please choose a colour for position 3"
-  pos_three = gets.chomp
-  if colours.include?(pos_three)
-    board[turn - 1][2] = pos_three
-  else
-    puts "Must pick red, green, blue, yellow, orange or purple"
-    return self.positionthree(board, turn, colours)
-  end
-end
-
-def positionfour(board, turn, colours)
-  puts "please choose a colour for position 4"
-  pos_four = gets.chomp
-  if colours.include?(pos_four)
-    board[turn - 1][3] = pos_four
-  else
-    puts "Must pick red, green, blue, yellow, orange or purple"
-    return self.positionfour(board, turn, colours)
-  end
-end
-
-def check(board, turn, secretcode)
-  if board[turn - 1][0] == secretcode[0]
-    puts "Position 1 is the correct colour"
-  end
-
-  if board[turn - 1][0] != secretcode[0] && secretcode.include?(board[turn - 1][0])
-    puts "Position 1 colour is used but not here"
-  end
-
-  if board[turn - 1][1] == secretcode[1]
-    puts "Position 2 is the correct colour"
-  end
-
-  if board[turn - 1][1] != secretcode[1] && secretcode.include?(board[turn - 1][1])
-    puts "Position 2 colour is used but not here"
-  end 
-
-  if board[turn - 1][2] == secretcode[2]
-    puts "Position 3 is the correct colour"
-  end
-
-  if board[turn - 1][2] != secretcode[2] && secretcode.include?(board[turn - 1][2])
-    puts "Position 3 colour is used but not here"
-  end 
-
-  if board[turn - 1][3] == secretcode[3]
-    puts "Position 4 is the correct colour"
-  end
-
-  if board[turn - 1][3] != secretcode[3] && secretcode.include?(board[turn - 1][3])
-    puts "Position 4 colour is used but not here"
-  end 
-end
-
-turns.each do |turn|
-  displayboard = board.map(&:compact).reject(&:empty?)
-  if self.correctcode?(board, turn, secretcode)
-    puts "You have correctly guessed the code!"
-    pp displayboard
-    break
-  end
-  puts "Here is the current board state on turn #{turn}"
-  pp displayboard
-
-  self.positionone(board, turn, colours)
-  self.positiontwo(board, turn, colours)
-  self.positionthree(board, turn, colours)
-  self.positionfour(board, turn, colours)
-  self.check(board, turn, secretcode)
-end
+pick(answer, board, turns, secretcode, slots, colours, guess)
