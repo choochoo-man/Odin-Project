@@ -2,7 +2,7 @@ require 'yaml'
 require 'pry'
 
 class HangMan
-  attr_accessor :target_word, :target_word_array, :display, :guessed_letters, :current_turn
+  attr_accessor :target_word, :target_word_array, :display, :guessed_letters, :wrong_guesses
 
   def initialize
     wordlist = File.open("lib/google-10000-english-no-swears.txt")
@@ -11,7 +11,7 @@ class HangMan
     @target_word_array = @target_word.split("")
     @display = Array.new(@target_word_array.length, "_")
     @guessed_letters = []
-    @current_turn = 1
+    @wrong_guesses = 0
   end
 
   def win_condition?
@@ -29,7 +29,7 @@ class HangMan
     {target_word: target_word,
      display: display, 
      guessed_letters: guessed_letters,
-     current_turn: current_turn }
+     wrong_guesses: wrong_guesses }
     serialized_game = YAML::dump(game_hash)
     File.write("lib/saves/#{game_name}.rb", serialized_game)
     exit
@@ -62,26 +62,26 @@ class HangMan
       @guessed_letters << letter
       puts "You have guessed the following letters"
       puts @guessed_letters.join(" ")
+      self.wrong_guesses += 1
     end
 
-    self.current_turn += 1
+    # self.wrong_guesses += 1/
   end
 
   def play_game
-    while current_turn < 12
-      unless current_turn ==1
-        puts "Turn #{current_turn} board: #{display}"
+    while wrong_guesses < 12
+      unless wrong_guesses ==1
+        puts "#{wrong_guesses} wrong guesses, board: #{display}"
       end 
-  
       guess
   
       if win_condition? == true
-        puts "You won on turn #{current_turn}, the word was #{target_word}"
+        puts "You won with #{wrong_guesses} wrong guesses, the word was #{target_word}"
         break
       end
     end
   
-    if current_turn == 12
+    if wrong_guesses == 12
       puts "Game over, the word was #{target_word}"
     end
   end
@@ -96,7 +96,7 @@ class HangMan
     @target_word_array = @target_word.split("")
     @display = unserialized_game[:display]
     @guessed_letters = unserialized_game[:guessed_letters]
-    @current_turn = unserialized_game[:current_turn]
+    @wrong_guesses = unserialized_game[:wrong_guesses]
     self.play_game
   rescue Errno::ENOENT
     self.load_game
