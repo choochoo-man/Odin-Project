@@ -25,5 +25,3 @@ array_3_map = array_3.map do |valu|
 end
 p array_3
 p array_3_map
-
-#test
