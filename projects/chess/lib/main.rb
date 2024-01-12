@@ -7,18 +7,20 @@ include Coordinates
 
 class Chess
   attr_accessor :board, :valid_squares, :position, :position_index, :white_pieces, :black_pieces, :valid_moves, :letters_to_coords, :selected_piece, :white_king_position, :black_king_position, :turn, :to_play, :piece_positions
-  def initialize(board = Array.new(4) {Array.new(8, "_")}, valid_squares = [], position = nil, position_index = nil, valid_moves = [], selected_piece = nil, turn = 1, to_play = "white")
+  def initialize(board = Array.new(4) {Array.new(8, "_")}, turn = 1, to_play = "white", last_piece_moved = nil, has_moved = {black_a_rook: "no", black_h_rook: "no", black_king: "no", white_a_rook: "no", white_h_rook: "no", white_king: "no"})
     @board = board
     @turn = turn
     @to_play = to_play
-    @valid_squares = valid_squares
-    @position = position
-    @position_index = position_index
+    @has_moved = has_moved
+    @last_piece_moved = last_piece_moved
+    @valid_squares = []
+    @position = nil
+    @position_index = nil
     @white_pieces = %w[♙ ♘ ♗ ♖ ♕ ♔]
     @black_pieces = %w[♟︎ ♞ ♝ ♜ ♛ ♚]
-    @valid_moves = valid_moves
+    @valid_moves = []
     @letters_to_coords = %w[a b c d e f g h]
-    @selected_piece = selected_piece
+    @selected_piece = nil
     @white_king_position = [7, 4]
     @black_king_position = [0, 4]
     @piece_positions = {}
