@@ -62,7 +62,7 @@ class Chess
 
     friends = @to_play == "white" ? @white_pieces : @black_pieces
 
-    unless friends.include?(@selected_piece)# || @selected_piece == "_"
+    unless friends.include?(@selected_piece)
       puts "Must choose a #{@to_play} piece to move"
 
       return self.choose_square
@@ -189,38 +189,6 @@ class Chess
       end
     end
   end
-
-  # def king_options(relative_coords)
-  #   self.valid_moves = []
-  #   relative_coords.each do |coords|
-  #     enemy_king_found = false
-  #     enemies = self.white_pieces.include?(self.selected_piece) ? self.black_pieces : self.white_pieces
-  #     friends = self.white_pieces.include?(self.selected_piece) ? self.white_pieces : self.black_pieces  
-  #     enemy_king = self.white_pieces.include?(self.selected_piece) ? "♚" : "♔"
-
-  #     if self.valid_squares.include?(coords_to_square([position_index[1] + coords[1], position_index[0] + coords[0]]))
-  #       square_being_looked_at = self.board[position_index[1] + coords[1]][position_index[0] + coords[0]]   
-        
-  #       if square_being_looked_at == "_" || enemies.include?(square_being_looked_at)
-  #         relative_coords.each do |enemy_king_check_coords|
-
-  #           potential_position = self.board[position_index[1] + coords[1] + enemy_king_check_coords[1]][position_index[0] + coords[0] + enemy_king_check_coords[0]]   
-
-  #           if self.valid_squares.include?(coords_to_square([position_index[1] + coords[1] + enemy_king_check_coords[1]][position_index[0] + coords[0] + enemy_king_check_coords[0]]))
-  #             if potential_position = enemy_king
-  #               enemy_king_found = true
-
-  #             end
-  #           end
-  #         end
-
-  #         if enemy_king_found == false
-  #           self.valid_moves << coords_to_square([position_index[1] + coords[1], position_index[0] + coords[0]])
-  #         end
-  #       end
-  #     end
-  #   end
-  # end
 
   def white_pawn
       movement_coords = Coordinates.white_pawn_moves
@@ -599,26 +567,3 @@ end
 
 game = Chess.new
 game.play_game
-
-#todo fix king move methods MAKE KING POSITION @ CHANGE AFTER MVOING KING
-
-# game.fetch_piece_positions
-# puts game.piece_positions
-# game.checkmate?
-# game.board[1][3] = "_"
-# game.board[2][3] = "♟︎"
-# pp game.black_king_check?
-# game.play_game
-
-# game.board[5][2] = "♙"
-# game.board[5][0] = "♙"
-# game.board[5][3] = "♞"
-# # game.board[5][3] = "♙"
-
-# pp game.board
-# pp game.white_king_check?
-# game.choose_square
-# game.identify_piece
-# pp game.valid_moves
-# game.check_valid_moves
-# pp game.valid_moves
