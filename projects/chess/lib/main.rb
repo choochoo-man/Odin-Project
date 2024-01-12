@@ -1,6 +1,6 @@
 # White pieces: Pawn: ♙, Knight: ♘, Bishop: ♗, Rook: ♖, Queen: ♕, King: ♔
 # Black pieces: Pawn: ♟︎, Knight: ♞, Bishop: ♝, Rook: ♜, Queen: ♛, King: ♚
-
+require 'yaml'
 require_relative './piece_movements.rb'
 include Coordinates
 
@@ -24,10 +24,12 @@ class Chess
     @white_king_position = [7, 4]
     @black_king_position = [0, 4]
     @piece_positions = {}
-    @board << %w[♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙]
-    @board << %w[♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖]
-    @board.unshift(%w[♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎])
-    @board.unshift(%w[♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜])
+    if @board.size == 4
+      @board << %w[♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙]
+      @board << %w[♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖]
+      @board.unshift(%w[♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎ ♟︎])
+      @board.unshift(%w[♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜])
+    end
 
     ("a".."h").each do |letter|
       (1..8).each do |number|
@@ -38,10 +40,10 @@ class Chess
   end
 
   def choose_square
-    puts "Please choose a piece to move (a1 - h8)"
+    puts "Please choose a piece to move (a1 - h8) or type 'save"
     answer = gets.chomp
 
-    unless @valid_squares.include?(answer)
+    unless @valid_squares.include?(answer) || answer.downcase == 'save'
       return choose_square
 
     end
@@ -49,6 +51,8 @@ class Chess
     if @valid_squares.include?(answer)
       self.position = answer
 
+    elsif answer.downcase == 'save'
+      self.save_game
     end
     self.identify_piece
   end
@@ -565,7 +569,52 @@ class Chess
     end
     self.play_game
   end
+
+  def save_game
+    puts "What would you like to call the saved game?"
+    game_name = gets.chomp.downcase
+    game_hash = 
+    {board: @board,
+     turn: @turn, 
+     to_play: @to_play,
+     last_piece_moved: @last_piece_moved,
+     has_moved: @has_moved }
+    serialized_game = YAML::dump(game_hash)
+    File.write("saves/#{game_name}.yaml", serialized_game)
+    puts "Game saved successfully as #{game_name}.yaml"
+    exit
+  end
+
+  def new_game_or_load
+    puts "Would you like to start a new game, or load one? [new / load]"
+    answer = gets.chomp
+    unless answer.downcase == 'new' || answer.downcase == 'load'
+      return self.new_game_or_load
+    end
+    case answer.downcase
+    when 'new'
+      self.play_game
+    when 'load'
+      self.load_game
+    end
+  end
+
+  def load_game
+    puts Dir.entries("saves")
+    save_files =[]
+    save_files << Dir.entries("saves")
+    pp save_files
+    puts "Please pick a game to load"
+    response = gets.chomp
+    serialized_game = File.open("saves/#{response}", "r")
+    unserialized_game = YAML::load_file(serialized_game)
+    loaded_game = Chess.new(unserialized_game[:board], unserialized_game[:turn], unserialized_game[:to_play], unserialized_game[:last_piece_moved], unserialized_game[:has_moved])
+    loaded_game.play_game
+  rescue Errno::ENOENT
+    self.load_game
+  end
+
 end
 
 game = Chess.new
-game.play_game
+game.new_game_or_load
