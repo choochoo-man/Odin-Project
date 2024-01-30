@@ -148,6 +148,9 @@ class Chess
         break
       end 
     end
+
+    #en passant
+
   end
 
   def knight_options(relative_coords)
@@ -507,6 +510,12 @@ class Chess
     end
   end
 
+  def update_last_piece_moved(selected_piece, answer_index)
+    @last_piece_moved = {}
+
+    @last_piece_moved[selected_piece] = self.coords_to_square(answer_index)
+  end
+
   def make_move
     answer = gets.chomp
     unless @valid_moves.include?(answer)
@@ -537,6 +546,9 @@ class Chess
         self.board[answer_index[1]][answer_index[0]] = @selected_piece
 
         self.board[position_index[1]][position_index[0]] = "_"
+
+        self.update_last_piece_moved(@selected_piece, answer_index)
+
       end
 
     elsif @selected_piece == "♟︎"
@@ -549,6 +561,8 @@ class Chess
         self.board[answer_index[1]][answer_index[0]] = @selected_piece
 
         self.board[position_index[1]][position_index[0]] = "_"
+
+        self.update_last_piece_moved(@selected_piece, answer_index)
       
       end
 
@@ -556,6 +570,8 @@ class Chess
       self.board[answer_index[1]][answer_index[0]] = @selected_piece
 
       self.board[position_index[1]][position_index[0]] = "_"
+
+      self.update_last_piece_moved(@selected_piece, answer_index)
     
     end
   end
@@ -665,6 +681,7 @@ class Chess
       @turn += 1
       @to_play = "white"
     end
+    pp @last_piece_moved
     self.play_game
   end
 
