@@ -112,8 +112,6 @@ class Chess
 
   def pawn_options(movement_coords, attack_coords)
     self.valid_moves = []
-    pp @position_index
-
     attack_coords.each do |a_coords|
       if self.valid_squares.include?(coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]]))
         enemies = self.white_pieces.include?(self.selected_piece) ? self.black_pieces : self.white_pieces
@@ -139,8 +137,6 @@ class Chess
 
                       if from_split.first == square_split.first && to_split.first == square_split.first
                         if from_split.last == "2" && to_split.last == "4"
-                          pp @position_index
-                          pp a_coords
                           self.valid_moves << coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
                         end
                       end
@@ -148,25 +144,17 @@ class Chess
                   end
                 end
               end
-              pp square_being_looked_at
               if square_being_looked_at == "_"
-                pp @selected_piece
                 if @selected_piece == "♙"
-                  pp position_index[1]
                   if position_index[1] == 3
-                    pp @last_piece_moved.values.first
                     if @last_piece_moved.values.first == "♟︎"
                       square = coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
                       square_split = square.split("")
                       from_split = @last_piece_moved.keys.first.split("")
                       to_split = @last_piece_moved.keys.last.split("")
-                      pp from_split
-                      pp to_split
 
                       if from_split.first == square_split.first && to_split.first == square_split.first
                         if from_split.last == "7" && to_split.last == "5"
-                          pp @position_index
-                          pp a_coords
                           self.valid_moves << coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
                         end
                       end
@@ -183,8 +171,7 @@ class Chess
     movement_coords.each do |coords|
 
       if self.board[position_index[1] + coords[1]][position_index[0] + coords[0]] == "_" # Adding the relative valid attack square index via 'coords'
-        pp position_index
-        pp coords
+
         self.valid_moves << coords_to_square([position_index[1] + coords[1], position_index[0] + coords[0]])
 
       else
@@ -233,7 +220,35 @@ class Chess
         end
       end
     end
+    case @selected_piece
+    when "♔"
+      if self.white_king_check? == false && @has_moved[:white_a_rook] == "no" && @has_moved[:white_h_rook] == "no" && @has_moved[:white_king] ==  "no"
+        #short castles O-O
 
+        if @board[7][5] == "_" && @board[7][6] == "_"
+          self.valid_moves << "O-O"
+
+        end
+
+        #long castles O-O-O
+        if @board[7][3] == "_" && @board[7][2] == "_" && @board[7][1] == "_"
+          self.valid_moves << "O-O-O"
+        end
+      end
+
+    when "♚"
+      if self.black_king_check? == false && @has_moved[:black_a_rook] == "no" && @has_moved[:black_h_rook] == "no" && @has_moved[:black_king] ==  "no"
+        #short castles O-O
+        if @board[0][5] == "_" && @board[0][6] == "_"
+          self.valid_moves << "O-O"
+        end
+
+        #long castles O-O-O
+        if @board[0][3] == "_" && @board[0][2] == "_" && @board[0][1] == "_"
+          self.valid_moves << "O-O-O"
+        end
+      end
+    end
   end
 
   def iterative_options(relative_coords)
@@ -510,9 +525,13 @@ class Chess
     in_check
   end
 
-  def check_valid_moves(valid_moves = @valid_moves)
-    moves_to_check = Marshal.load(Marshal.dump(@valid_moves))
+  def check_valid_moves(valid_moves = @valid_moves, selected_piece = @selected_piece)
+    moves_to_check = Marshal.load(Marshal.dump(valid_moves))
     moves_to_check.each do |move|
+
+      if move == "O-O" || move == "O-O-O"
+        next
+      end
 
       move_index = move.split("")
 
@@ -522,11 +541,11 @@ class Chess
 
       board_copy = Marshal.load(Marshal.dump(@board))
 
-      board_copy[move_index[1]][move_index[0]] = @selected_piece
+      board_copy[move_index[1]][move_index[0]] = selected_piece
 
       board_copy[position_index[1]][position_index[0]] = "_"
 
-      case @selected_piece
+      case selected_piece
 
       when "♔"
         white_king_position_copy = Marshal.load(Marshal.dump(@white_king_position))
@@ -578,53 +597,99 @@ class Chess
 
     answer_index[1] = 8 - answer_index[1].to_i
 
+
+
     case @selected_piece
     when "♔"
       @white_king_position[0] = answer_index[1]
       @white_king_position[1] = answer_index[0]
+      @has_moved[:white_king] = "yes"
     when "♚"
       @black_king_position[0] = answer_index[1]
       @black_king_position[1] = answer_index[0]
+      @has_moved[:black_king] = "yes"
+    when "♖"
+      if @position_index == [0, 7]
+        @has_moved[:white_a_rook] = "yes"
+      elsif  @position_index == [7, 7]
+        @has_moved[:white_h_rook] = "yes"
+      end
+    when "♜"
+      if @position_index == [0, 0]
+        @has_moved[:black_a_rook] = "yes"
+      elsif  @position_index == [7, 0]
+        @has_moved[:black_h_rook] = "yes"
+      end
     end
+    if answer == "O-O"
+      case @selected_piece
+      when "♔"
+        @board[7][4] = "_"
+        @board[7][6] = "♔"
+        @board[7][7] = "_"
+        @board[7][5] = "♖"
 
-    if @selected_piece == "♙"
-
-      if answer_index[1] == 0
-        self.promotion("white", answer_index[0])
-
-      elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
-        self.board[answer_index[1]][answer_index[0]] = @selected_piece
-        self.board[position_index[1]][position_index[0]] = "_"
-        self.board[answer_index[1] + 1][answer_index[0]] = "_"
-
-      else
-        self.board[answer_index[1]][answer_index[0]] = @selected_piece
-        self.board[position_index[1]][position_index[0]] = "_"
+      when "♚"
+        @board[0][4] = "_"
+        @board[0][6] = "♚"
+        @board[0][7] = "_"
+        @board[0][5] = "♜"
 
       end
-
-
-    elsif @selected_piece == "♟︎"
-
-      if answer_index[1] == 7
-        self.promotion("black", answer_index[0])
-
-      elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
-        self.board[answer_index[1]][answer_index[0]] = @selected_piece
-        self.board[position_index[1]][position_index[0]] = "_"
-        self.board[answer_index[1] - 1][answer_index[0]] = "_"
-
-      else
-        self.board[answer_index[1]][answer_index[0]] = @selected_piece
-        self.board[position_index[1]][position_index[0]] = "_"
+    elsif answer == "O-O-O"
+      case @selected_piece
+      when "♔"
+        @board[7][4] = "_"
+        @board[7][2] = "♔"
+        @board[7][0] = "_"
+        @board[7][3] = "♖"
+      when "♚"
+        @board[0][4] = "_"
+        @board[0][2] = "♚"
+        @board[0][0] = "_"
+        @board[0][3] = "♜"
       end
-
     else
-      self.board[answer_index[1]][answer_index[0]] = @selected_piece
 
-      self.board[position_index[1]][position_index[0]] = "_"
+      if @selected_piece == "♙"
+
+        if answer_index[1] == 0
+          self.promotion("white", answer_index[0])
+
+        elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
+          self.board[answer_index[1]][answer_index[0]] = @selected_piece
+          self.board[position_index[1]][position_index[0]] = "_"
+          self.board[answer_index[1] + 1][answer_index[0]] = "_"
+
+        else
+          self.board[answer_index[1]][answer_index[0]] = @selected_piece
+          self.board[position_index[1]][position_index[0]] = "_"
+
+        end
 
 
+      elsif @selected_piece == "♟︎"
+
+        if answer_index[1] == 7
+          self.promotion("black", answer_index[0])
+
+        elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
+          self.board[answer_index[1]][answer_index[0]] = @selected_piece
+          self.board[position_index[1]][position_index[0]] = "_"
+          self.board[answer_index[1] - 1][answer_index[0]] = "_"
+
+        else
+          self.board[answer_index[1]][answer_index[0]] = @selected_piece
+          self.board[position_index[1]][position_index[0]] = "_"
+        end
+
+      else
+        self.board[answer_index[1]][answer_index[0]] = @selected_piece
+
+        self.board[position_index[1]][position_index[0]] = "_"
+
+
+      end
     end
   end
 
@@ -656,9 +721,6 @@ class Chess
       @board[position_index[1]][position_index[0]] = "_"
     end
   end
-
-
-
 
   def fetch_piece_positions
     @board.each_with_index do |row, row_index|
@@ -732,7 +794,6 @@ class Chess
       @turn += 1
       @to_play = "white"
     end
-    pp @last_piece_moved
     self.play_game
   end
 
