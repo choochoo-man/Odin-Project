@@ -80,9 +80,9 @@ class Chess
     when "♟︎"
       self.black_pawn
     when "♘"
-      self.knight 
+      self.knight
     when "♞"
-      self.knight 
+      self.knight
     when "♗"
       self.bishop
     when "♝"
@@ -103,7 +103,7 @@ class Chess
       puts "Piece not found"
       return self.play_game
 
-    end 
+    end
   end
 
   def coords_to_square(coords)
@@ -112,6 +112,7 @@ class Chess
 
   def pawn_options(movement_coords, attack_coords)
     self.valid_moves = []
+    pp @position_index
 
     attack_coords.each do |a_coords|
       if self.valid_squares.include?(coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]]))
@@ -125,6 +126,55 @@ class Chess
 
             self.valid_moves << coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
 
+          else
+            if @last_piece_moved != nil
+              if square_being_looked_at == "_"
+                if @selected_piece == "♟︎"
+                  if position_index[1] == 4
+                    if @last_piece_moved.values.first == "♙"
+                      square = coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
+                      square_split = square.split("")
+                      from_split = @last_piece_moved.keys.first.split("")
+                      to_split = @last_piece_moved.keys.last.split("")
+
+                      if from_split.first == square_split.first && to_split.first == square_split.first
+                        if from_split.last == "2" && to_split.last == "4"
+                          pp @position_index
+                          pp a_coords
+                          self.valid_moves << coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+              pp square_being_looked_at
+              if square_being_looked_at == "_"
+                pp @selected_piece
+                if @selected_piece == "♙"
+                  pp position_index[1]
+                  if position_index[1] == 3
+                    pp @last_piece_moved.values.first
+                    if @last_piece_moved.values.first == "♟︎"
+                      square = coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
+                      square_split = square.split("")
+                      from_split = @last_piece_moved.keys.first.split("")
+                      to_split = @last_piece_moved.keys.last.split("")
+                      pp from_split
+                      pp to_split
+
+                      if from_split.first == square_split.first && to_split.first == square_split.first
+                        if from_split.last == "7" && to_split.last == "5"
+                          pp @position_index
+                          pp a_coords
+                          self.valid_moves << coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]])
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
           end
         end
       end
@@ -133,7 +183,8 @@ class Chess
     movement_coords.each do |coords|
 
       if self.board[position_index[1] + coords[1]][position_index[0] + coords[0]] == "_" # Adding the relative valid attack square index via 'coords'
-
+        pp position_index
+        pp coords
         self.valid_moves << coords_to_square([position_index[1] + coords[1], position_index[0] + coords[0]])
 
       else
@@ -146,11 +197,8 @@ class Chess
 
       if @selected_piece == "♟︎" && position_index[1] != 1
         break
-      end 
+      end
     end
-
-    #en passant
-
   end
 
   def knight_options(relative_coords)
@@ -185,7 +233,7 @@ class Chess
         end
       end
     end
-    
+
   end
 
   def iterative_options(relative_coords)
@@ -209,11 +257,11 @@ class Chess
           elsif enemies.include?(square_being_looked_at)
 
             self.valid_moves << coords_to_square([position_index[1] + coords[1], position_index[0] + coords[0]])
-            
+
             break
 
           elsif friends.include?(square_being_looked_at)
-            
+
             break
 
           end
@@ -274,7 +322,7 @@ class Chess
 
   def white_king_check?(board = @board, white_king_position = @white_king_position)
     in_check = false
-  
+
     friends = self.white_pieces
 
     Coordinates.white_pawn_attacks.each do |coords|
@@ -330,7 +378,7 @@ class Chess
           square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
           unless white_king_position[0] + coords[1] < 0 || white_king_position[1] + coords[0] < 0
-       
+
             if %w[♜ ♛].include?(square_being_looked_at)
               # pp "found rook/queen check"
               in_check = true
@@ -369,7 +417,7 @@ class Chess
 
   def black_king_check?(board = @board, black_king_position = @black_king_position)
     in_check = false
-    
+
     friends = self.black_pieces
 
     Coordinates.black_pawn_attacks.each do |coords|
@@ -469,7 +517,7 @@ class Chess
       move_index = move.split("")
 
       move_index[0] = self.letters_to_coords.find_index(move_index[0])
-  
+
       move_index[1] = 8 - move_index[1].to_i
 
       board_copy = Marshal.load(Marshal.dump(@board))
@@ -510,10 +558,10 @@ class Chess
     end
   end
 
-  def update_last_piece_moved(selected_piece, answer_index)
+  def update_last_piece_moved(selected_piece, answer, position_index)
     @last_piece_moved = {}
-
-    @last_piece_moved[selected_piece] = self.coords_to_square(answer_index)
+    @last_piece_moved[position] = selected_piece  #from
+    @last_piece_moved[answer] = selected_piece    #to
   end
 
   def make_move
@@ -521,6 +569,9 @@ class Chess
     unless @valid_moves.include?(answer)
       return self.make_move
     end
+
+    self.update_last_piece_moved(@selected_piece, answer, @position)
+
     answer_index = answer.split("")
 
     answer_index[0] = self.letters_to_coords.find_index(answer_index[0])
@@ -539,31 +590,33 @@ class Chess
     if @selected_piece == "♙"
 
       if answer_index[1] == 0
-
         self.promotion("white", answer_index[0])
+
+      elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
+        self.board[answer_index[1]][answer_index[0]] = @selected_piece
+        self.board[position_index[1]][position_index[0]] = "_"
+        self.board[answer_index[1] + 1][answer_index[0]] = "_"
 
       else
         self.board[answer_index[1]][answer_index[0]] = @selected_piece
-
         self.board[position_index[1]][position_index[0]] = "_"
 
-        self.update_last_piece_moved(@selected_piece, answer_index)
-
       end
+
 
     elsif @selected_piece == "♟︎"
 
       if answer_index[1] == 7
-
         self.promotion("black", answer_index[0])
+
+      elsif position.split("").first != answer.split("").first && self.board[answer_index[1]][answer_index[0]] == "_"
+        self.board[answer_index[1]][answer_index[0]] = @selected_piece
+        self.board[position_index[1]][position_index[0]] = "_"
+        self.board[answer_index[1] - 1][answer_index[0]] = "_"
 
       else
         self.board[answer_index[1]][answer_index[0]] = @selected_piece
-
         self.board[position_index[1]][position_index[0]] = "_"
-
-        self.update_last_piece_moved(@selected_piece, answer_index)
-      
       end
 
     else
@@ -571,8 +624,7 @@ class Chess
 
       self.board[position_index[1]][position_index[0]] = "_"
 
-      self.update_last_piece_moved(@selected_piece, answer_index)
-    
+
     end
   end
 
@@ -653,7 +705,7 @@ class Chess
           puts "Game over on turn #{turn}, black won via checkmate"
           exit
         end
-      end  
+      end
     elsif self.black_king_check?
       if self.checkmate?
         puts "Game over on turn #{turn}. white won via checkmate"
@@ -662,14 +714,13 @@ class Chess
     end
 
     self.choose_square
-    pp @valid_moves
     self.check_valid_moves
     pp @valid_moves
     if @valid_moves.empty?
       puts "No legal moves for this piece"
       return self.play_game
     end
-  
+
     puts "Here are the squares your #{selected_piece} can move to"
     pp @valid_moves
     puts "Please pick a square"
@@ -688,9 +739,9 @@ class Chess
   def save_game
     puts "What would you like to call the saved game?"
     game_name = gets.chomp.downcase
-    game_hash = 
+    game_hash =
     {board: @board,
-     turn: @turn, 
+     turn: @turn,
      to_play: @to_play,
      last_piece_moved: @last_piece_moved,
      has_moved: @has_moved,
