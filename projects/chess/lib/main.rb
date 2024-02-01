@@ -226,13 +226,17 @@ class Chess
         #short castles O-O
 
         if @board[7][5] == "_" && @board[7][6] == "_"
-          self.valid_moves << "O-O"
+          if check_castling_valid?("O-O")
+            self.valid_moves << "O-O"
+          end
 
         end
 
         #long castles O-O-O
         if @board[7][3] == "_" && @board[7][2] == "_" && @board[7][1] == "_"
-          self.valid_moves << "O-O-O"
+          if check_castling_valid?("O-O-O")
+            self.valid_moves << "O-O-O"
+          end
         end
       end
 
@@ -240,12 +244,16 @@ class Chess
       if self.black_king_check? == false && @has_moved[:black_a_rook] == "no" && @has_moved[:black_h_rook] == "no" && @has_moved[:black_king] ==  "no"
         #short castles O-O
         if @board[0][5] == "_" && @board[0][6] == "_"
-          self.valid_moves << "O-O"
+          if check_castling_valid?("O-O")
+            self.valid_moves << "O-O"
+          end
         end
 
         #long castles O-O-O
         if @board[0][3] == "_" && @board[0][2] == "_" && @board[0][1] == "_"
-          self.valid_moves << "O-O-O"
+          if check_castling_valid?("O-O-O")
+            self.valid_moves << "O-O-O"
+          end
         end
       end
     end
@@ -343,7 +351,7 @@ class Chess
     Coordinates.white_pawn_attacks.each do |coords|
       break if in_check
 
-      if self.valid_squares.include?(coords_to_square([white_king_position[0] + coords[1], white_king_position[0] + coords[1]]))
+      if self.valid_squares.include?(coords_to_square([white_king_position[0] + coords[1], white_king_position[1] + coords[0]]))
 
         square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
@@ -439,7 +447,7 @@ class Chess
     Coordinates.black_pawn_attacks.each do |coords|
       break if in_check
 
-      if self.valid_squares.include?(coords_to_square([black_king_position[0] + coords[1], black_king_position[0] + coords[1]]))
+      if self.valid_squares.include?(coords_to_square([black_king_position[0] + coords[1], black_king_position[1] + coords[0]]))
 
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
@@ -526,6 +534,94 @@ class Chess
     in_check
   end
 
+  def check_castling_valid?(direction)
+    board_copy = Marshal.load(Marshal.dump(@board))
+    case @selected_piece
+    when "♔"
+      white_king_position_copy = Marshal.load(Marshal.dump(@white_king_position))
+      case direction
+      when "O-O"
+        board_copy[7][4] = "_"
+        board_copy[7][5] = "♔"
+        white_king_position_copy = [7, 5]
+
+        if white_king_check?(board_copy, white_king_position_copy)
+          return false
+
+        else
+          board_copy[7][5] = "_"
+          board_copy[7][6] = "♔"
+          white_king_position_copy = [7, 6]
+          if white_king_check?(board_copy, white_king_position_copy)
+            return false
+          else
+            return true
+          end
+        end
+      when "O-O-O"
+        board_copy[7][4] = "_"
+        board_copy[7][3] = "♔"
+        white_king_position_copy = [7, 3]
+
+        if white_king_check?(board_copy, white_king_position_copy)
+          return false
+
+        else
+          board_copy[7][3] = "_"
+          board_copy[7][2] = "♔"
+          white_king_position_copy = [7, 2]
+          if white_king_check?(board_copy, white_king_position_copy)
+            return false
+          else
+            return true
+          end
+        end
+      end
+    when "♚"
+      black_king_position_copy = Marshal.load(Marshal.dump(@black_king_position))
+      case direction
+      when "O-O"
+        board_copy[0][4] = "_"
+        board_copy[0][5] = "♔"
+        black_king_position_copy = [0, 5]
+
+        if black_king_check?(board_copy, black_king_position_copy)
+          return false
+
+        else
+          board_copy[0][5] = "_"
+          board_copy[0][6] = "♔"
+          black_king_position_copy = [0, 6]
+          if black_king_check?(board_copy, black_king_position_copy)
+            return false
+          else
+            return true
+          end
+        end
+
+      when "O-O-O"
+        board_copy[0][4] = "_"
+        board_copy[0][3] = "♔"
+        black_king_position_copy = [0, 3]
+
+        if black_king_check?(board_copy, black_king_position_copy)
+          return false
+
+        else
+          board_copy[0][3] = "_"
+          board_copy[0][2] = "♔"
+          black_king_position_copy = [0, 2]
+          if black_king_check?(board_copy, black_king_position_copy)
+            return false
+          else
+            return true
+          end
+        end
+      end
+    end
+  end
+
+
   def check_valid_moves(valid_moves = @valid_moves, selected_piece = @selected_piece)
     moves_to_check = Marshal.load(Marshal.dump(valid_moves))
     moves_to_check.each do |move|
@@ -535,15 +631,10 @@ class Chess
       end
 
       move_index = move.split("")
-
       move_index[0] = self.letters_to_coords.find_index(move_index[0])
-
       move_index[1] = 8 - move_index[1].to_i
-
       board_copy = Marshal.load(Marshal.dump(@board))
-
       board_copy[move_index[1]][move_index[0]] = selected_piece
-
       board_copy[position_index[1]][position_index[0]] = "_"
 
       case selected_piece
@@ -591,14 +682,9 @@ class Chess
     end
 
     self.update_last_piece_moved(@selected_piece, answer, @position)
-
     answer_index = answer.split("")
-
     answer_index[0] = self.letters_to_coords.find_index(answer_index[0])
-
     answer_index[1] = 8 - answer_index[1].to_i
-
-
 
     case @selected_piece
     when "♔"
