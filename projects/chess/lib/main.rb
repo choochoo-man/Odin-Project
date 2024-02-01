@@ -7,7 +7,7 @@ include Coordinates
 
 class Chess
   attr_accessor :board, :valid_squares, :position, :position_index, :white_pieces, :black_pieces, :valid_moves, :letters_to_coords, :selected_piece, :white_king_position, :black_king_position, :turn, :to_play, :piece_positions, :last_piece_moved, :has_moved
-  def initialize(board = Array.new(4) {Array.new(8, "_")}, turn = 1, to_play = "white", last_piece_moved = nil, has_moved = {black_a_rook: "no", black_h_rook: "no", black_king: "no", white_a_rook: "no", white_h_rook: "no", white_king: "no"}, white_king_position = [7, 0], black_king_position = [0, 4])
+  def initialize(board = Array.new(4) {Array.new(8, "_")}, turn = 1, to_play = "white", last_piece_moved = nil, has_moved = {black_a_rook: "no", black_h_rook: "no", black_king: "no", white_a_rook: "no", white_h_rook: "no", white_king: "no"}, white_king_position = [7, 4], black_king_position = [0, 4])
     @board = board
     @turn = turn
     @to_play = to_play
@@ -345,10 +345,11 @@ class Chess
 
       if self.valid_squares.include?(coords_to_square([white_king_position[0] + coords[1], white_king_position[0] + coords[1]]))
 
-        square_being_looked_at = board[white_king_position[1] + coords[1]][white_king_position[0] + coords[0]]
+        square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
         if %w[♟︎].include?(square_being_looked_at)
-          # pp "found pawn check"
+          pp @white_king_position
+          pp "found pawn check"
           in_check = true
           break
         end
@@ -363,7 +364,7 @@ class Chess
         square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
         if %w[♞].include?(square_being_looked_at)
-          # pp "found knight check"
+          pp "found knight check"
           in_check = true
           break
         end
@@ -378,7 +379,7 @@ class Chess
         square_being_looked_at = board[white_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♚].include?(square_being_looked_at)
-          # pp "found king check"
+          pp "found king check"
           in_check = true
           break
         end
@@ -395,7 +396,7 @@ class Chess
           unless white_king_position[0] + coords[1] < 0 || white_king_position[1] + coords[0] < 0
 
             if %w[♜ ♛].include?(square_being_looked_at)
-              # pp "found rook/queen check"
+              pp "found rook/queen check"
               in_check = true
               break
             elsif friends.include?(square_being_looked_at) || %w[♟︎ ♞ ♝ ♚].include?(square_being_looked_at)
@@ -418,7 +419,7 @@ class Chess
           end
 
           if %w[♝ ♛].include?(square_being_looked_at)
-            # pp "found bishop/queen check"
+            pp "found bishop/queen check"
             in_check = true
             break
           elsif friends.include?(square_being_looked_at) || %w[♟︎ ♞ ♜ ♚].include?(square_being_looked_at)
@@ -443,7 +444,7 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♙].include?(square_being_looked_at)
-          # pp "found pawn check"
+          pp "found pawn check"
           in_check = true
           break
         end
@@ -458,7 +459,7 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♘].include?(square_being_looked_at)
-          # pp "found knight check"
+          pp "found knight check"
           in_check = true
           break
         end
@@ -473,7 +474,7 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♔].include?(square_being_looked_at)
-          # pp "found king check"
+          pp "found king check"
           in_check = true
           break
         end
@@ -489,7 +490,7 @@ class Chess
 
           unless black_king_position[0] + coords[1] < 0 || black_king_position[1] + coords[0] < 0
             if %w[♖ ♕].include?(square_being_looked_at)
-              # pp "found rook/queen check"
+              pp "found rook/queen check"
               in_check = true
               break
             elsif friends.include?(square_being_looked_at) || %w[♙ ♘ ♗ ♔].include?(square_being_looked_at)
@@ -512,7 +513,7 @@ class Chess
           end
 
           if %w[♗ ♕].include?(square_being_looked_at)
-            # pp "found bishop/queen check"
+            pp "found bishop/queen check"
             in_check = true
             break
           elsif friends.include?(square_being_looked_at) || %w[♙ ♘ ♖ ♔].include?(square_being_looked_at)
@@ -628,12 +629,14 @@ class Chess
         @board[7][6] = "♔"
         @board[7][7] = "_"
         @board[7][5] = "♖"
+        @white_king_position = [7, 6]
 
       when "♚"
         @board[0][4] = "_"
         @board[0][6] = "♚"
         @board[0][7] = "_"
         @board[0][5] = "♜"
+        @black_king_position = [0, 6]
 
       end
     elsif answer == "O-O-O"
@@ -643,11 +646,14 @@ class Chess
         @board[7][2] = "♔"
         @board[7][0] = "_"
         @board[7][3] = "♖"
+        @white_king_position = [7, 2]
+        pp @board[@white_king_position[1]][@white_king_position[0]]
       when "♚"
         @board[0][4] = "_"
         @board[0][2] = "♚"
         @board[0][0] = "_"
         @board[0][3] = "♜"
+        @black_king_position = [0, 2]
       end
     else
 
