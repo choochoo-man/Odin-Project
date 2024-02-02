@@ -6,7 +6,7 @@ include Coordinates
 
 
 class Chess
-  attr_accessor :board, :valid_squares, :position, :position_index, :white_pieces, :black_pieces, :valid_moves, :letters_to_coords, :selected_piece, :white_king_position, :black_king_position, :turn, :to_play, :piece_positions, :last_piece_moved, :has_moved
+  attr_accessor :board, :valid_squares, :position, :position_index, :white_pieces, :black_pieces, :valid_moves, :letters_to_coords, :selected_piece, :white_king_position, :black_king_position, :turn, :to_play, :piece_positions, :last_piece_moved, :has_moved, :computer
   def initialize(board = Array.new(4) {Array.new(8, "_")}, turn = 1, to_play = "white", last_piece_moved = nil, has_moved = {black_a_rook: "no", black_h_rook: "no", black_king: "no", white_a_rook: "no", white_h_rook: "no", white_king: "no"}, white_king_position = [7, 4], black_king_position = [0, 4])
     @board = board
     @turn = turn
@@ -24,6 +24,7 @@ class Chess
     @white_king_position = white_king_position
     @black_king_position = black_king_position
     @piece_positions = {}
+    @computer = nil
     if @board.size == 4
       @board << %w[♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙]
       @board << %w[♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖]
@@ -39,9 +40,7 @@ class Chess
     end
   end
 
-  def choose_square
-    puts "Please choose a piece to move (a1 - h8) or type 'save'"
-    answer = gets.chomp
+  def choose_square(answer = gets.chomp)
 
     unless @valid_squares.include?(answer) || answer.downcase == 'save'
       return choose_square
@@ -59,15 +58,10 @@ class Chess
 
   def identify_piece(position = @position)
     @position_index = position.split("")
-
     @position_index[0] = self.letters_to_coords.find_index(position_index[0])
-
     @position_index[1] = 8 - position_index[1].to_i
-
     @selected_piece = self.board[position_index[1]][position_index[0]]
-
     friends = @to_play == "white" ? @white_pieces : @black_pieces
-
     unless friends.include?(@selected_piece)
       puts "Must choose a #{@to_play} piece to move"
 
@@ -114,8 +108,8 @@ class Chess
     self.valid_moves = []
     attack_coords.each do |a_coords|
       if self.valid_squares.include?(coords_to_square([position_index[1] + a_coords[1], position_index[0] + a_coords[0]]))
-        enemies = self.white_pieces.include?(self.selected_piece) ? self.black_pieces : self.white_pieces
 
+        enemies = self.white_pieces.include?(self.selected_piece) ? self.black_pieces : self.white_pieces
         square_being_looked_at = self.board[position_index[1] + a_coords[1]][position_index[0] + a_coords[0]]
 
         unless position_index[1] + a_coords[1] < 0 || position_index[0] + a_coords[0] < 0
@@ -223,7 +217,6 @@ class Chess
     case @selected_piece
     when "♔"
       if self.white_king_check? == false && @has_moved[:white_a_rook] == "no" && @has_moved[:white_h_rook] == "no" && @has_moved[:white_king] ==  "no"
-        #short castles O-O
 
         if @board[7][5] == "_" && @board[7][6] == "_"
           if check_castling_valid?("O-O")
@@ -232,7 +225,6 @@ class Chess
 
         end
 
-        #long castles O-O-O
         if @board[7][3] == "_" && @board[7][2] == "_" && @board[7][1] == "_"
           if check_castling_valid?("O-O-O")
             self.valid_moves << "O-O-O"
@@ -242,14 +234,12 @@ class Chess
 
     when "♚"
       if self.black_king_check? == false && @has_moved[:black_a_rook] == "no" && @has_moved[:black_h_rook] == "no" && @has_moved[:black_king] ==  "no"
-        #short castles O-O
         if @board[0][5] == "_" && @board[0][6] == "_"
           if check_castling_valid?("O-O")
             self.valid_moves << "O-O"
           end
         end
 
-        #long castles O-O-O
         if @board[0][3] == "_" && @board[0][2] == "_" && @board[0][1] == "_"
           if check_castling_valid?("O-O-O")
             self.valid_moves << "O-O-O"
@@ -675,8 +665,7 @@ class Chess
     @last_piece_moved[answer] = selected_piece    #to
   end
 
-  def make_move
-    answer = gets.chomp
+  def make_move(answer = gets.chomp)
     unless @valid_moves.include?(answer)
       return self.make_move
     end
@@ -785,6 +774,33 @@ class Chess
     end
   end
 
+  def random_computer_move
+    friends = @to_play == "white" ? @white_pieces : @black_pieces
+    self.fetch_piece_positions
+    pieces_with_legal_moves = []
+    @piece_positions.each do |key, value|
+
+      if friends.include?(value)
+        self.identify_piece(key)
+        self.check_valid_moves
+
+        if @valid_moves.any?
+            pieces_with_legal_moves << key
+        end
+      end
+
+    end
+    pp pieces_with_legal_moves
+    @position = pieces_with_legal_moves.sample
+    pp @position
+
+    self.identify_piece
+
+    random_move = @valid_moves.sample
+    pp random_move
+    self.make_move(random_move)
+  end
+
   def promotion(colour, file)
 
     puts "Choose which piece to promote your pawn to [Queen / Rook / Knight / Bishop]"
@@ -815,6 +831,7 @@ class Chess
   end
 
   def fetch_piece_positions
+    @piece_positions = {}
     @board.each_with_index do |row, row_index|
       row.each_with_index do |column, column_index|
         friends = @to_play == "white" ? @white_pieces : @black_pieces
@@ -866,19 +883,31 @@ class Chess
         exit
       end
     end
+    if @computer == 'white' && @to_play == "white"
+      puts "Computer is making a move"
+      self.random_computer_move
+      puts "Moved #{@last_piece_moved.values.first} from square #{@last_piece_moved.keys.first} to square #{@last_piece_moved.keys.last}"
 
-    self.choose_square
-    self.check_valid_moves
-    pp @valid_moves
-    if @valid_moves.empty?
-      puts "No legal moves for this piece"
-      return self.play_game
+    elsif @computer == 'black' && @to_play == "black"
+
+      puts "Computer is making a move"
+      self.random_computer_move
+      puts "Moved #{@last_piece_moved.values.first} from square #{@last_piece_moved.keys.first} to square #{@last_piece_moved.keys.last}"
+    else
+      puts "Please choose a piece to move (a1 - h8) or type 'save'"
+      self.choose_square
+      self.check_valid_moves
+      pp @valid_moves
+      if @valid_moves.empty?
+        puts "No legal moves for this piece"
+        return self.play_game
+      end
+
+      puts "Here are the squares your #{selected_piece} can move to"
+      pp @valid_moves
+      puts "Please pick a square"
+      self.make_move
     end
-
-    puts "Here are the squares your #{selected_piece} can move to"
-    pp @valid_moves
-    puts "Please pick a square"
-    self.make_move
 
     if @to_play == "white"
       @to_play = "black"
@@ -888,6 +917,21 @@ class Chess
     end
     self.play_game
   end
+
+  def play_computer
+    if @computer == 'white' && @to_play == 'white'
+        puts "Computer is making a move"
+        self.random_computer_move
+        puts "Moved #{@last_piece_moved.values.first} from square #{@last_piece_moved.keys.first} to square #{@last_piece_moved.keys.last}"
+
+    elsif @computer == 'black' && @to_play == 'black'
+      puts "Computer is making a move"
+      self.random_computer_move
+      puts "Moved #{@last_piece_moved.values.first} from square #{@last_piece_moved.keys.first} to square #{@last_piece_moved.keys.last}"
+    end
+  end
+
+
 
   def save_game
     puts "What would you like to call the saved game?"
@@ -914,11 +958,45 @@ def new_game_or_load
     return self.new_game_or_load
   end
   case answer.downcase
-  when 'new'
+    when 'new'
+      computer_or_player
+    when 'load'
+      load_game
+  end
+end
+
+def computer_or_player
+  puts "Would you like to play against the computer, or another person? [computer / player]"
+  answer = gets.chomp
+  unless answer.downcase == 'computer' || answer.downcase == 'player'
+    puts "Must choose computer or player"
+    return computer_or_player
+  end
+
+  case answer.downcase
+  when 'computer'
+    puts "Would you like to play as white or black? [ white / black]"
+    colour_answer = gets.chomp
+    unless colour_answer.downcase == 'white' || colour_answer.downcase == 'black'
+      puts "Must choose white or black"
+      return self.computer_or_player
+    end
+
+    if colour_answer == 'white'
+      game = Chess.new
+      game.computer = 'black'
+      game.play_game
+
+    elsif colour_answer == 'black'
+
+      game = Chess.new
+      game.computer = 'white'
+      game.play_game
+    end
+
+  when 'player'
     game = Chess.new
     game.play_game
-  when 'load'
-    self.load_game
   end
 end
 
@@ -933,7 +1011,7 @@ def load_game
   unserialized_game = YAML::load_file(serialized_game)
   loaded_game = Chess.new(unserialized_game[:board], unserialized_game[:turn], unserialized_game[:to_play], unserialized_game[:last_piece_moved], unserialized_game[:has_moved], unserialized_game[:white_king_position], unserialized_game[:black_king_position])
   loaded_game.play_game
-rescue Errno::ENOENT
+  rescue Errno::ENOENT
   self.load_game
 end
 
