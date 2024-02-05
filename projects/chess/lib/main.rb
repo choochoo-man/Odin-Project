@@ -346,8 +346,7 @@ class Chess
         square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
         if %w[♟︎].include?(square_being_looked_at)
-          pp @white_king_position
-          pp "found pawn check"
+
           in_check = true
           break
         end
@@ -362,7 +361,7 @@ class Chess
         square_being_looked_at = board[white_king_position[0] + coords[1]][white_king_position[1] + coords[0]]
 
         if %w[♞].include?(square_being_looked_at)
-          pp "found knight check"
+
           in_check = true
           break
         end
@@ -377,7 +376,7 @@ class Chess
         square_being_looked_at = board[white_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♚].include?(square_being_looked_at)
-          pp "found king check"
+
           in_check = true
           break
         end
@@ -394,7 +393,6 @@ class Chess
           unless white_king_position[0] + coords[1] < 0 || white_king_position[1] + coords[0] < 0
 
             if %w[♜ ♛].include?(square_being_looked_at)
-              pp "found rook/queen check"
               in_check = true
               break
             elsif friends.include?(square_being_looked_at) || %w[♟︎ ♞ ♝ ♚].include?(square_being_looked_at)
@@ -417,7 +415,8 @@ class Chess
           end
 
           if %w[♝ ♛].include?(square_being_looked_at)
-            pp "found bishop/queen check"
+
+
             in_check = true
             break
           elsif friends.include?(square_being_looked_at) || %w[♟︎ ♞ ♜ ♚].include?(square_being_looked_at)
@@ -442,7 +441,7 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♙].include?(square_being_looked_at)
-          pp "found pawn check"
+
           in_check = true
           break
         end
@@ -457,7 +456,6 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♘].include?(square_being_looked_at)
-          pp "found knight check"
           in_check = true
           break
         end
@@ -472,7 +470,6 @@ class Chess
         square_being_looked_at = board[black_king_position[0] + coords[1]][black_king_position[1] + coords[0]]
 
         if %w[♔].include?(square_being_looked_at)
-          pp "found king check"
           in_check = true
           break
         end
@@ -488,7 +485,6 @@ class Chess
 
           unless black_king_position[0] + coords[1] < 0 || black_king_position[1] + coords[0] < 0
             if %w[♖ ♕].include?(square_being_looked_at)
-              pp "found rook/queen check"
               in_check = true
               break
             elsif friends.include?(square_being_looked_at) || %w[♙ ♘ ♗ ♔].include?(square_being_looked_at)
@@ -511,7 +507,6 @@ class Chess
           end
 
           if %w[♗ ♕].include?(square_being_looked_at)
-            pp "found bishop/queen check"
             in_check = true
             break
           elsif friends.include?(square_being_looked_at) || %w[♙ ♘ ♖ ♔].include?(square_being_looked_at)
@@ -722,7 +717,6 @@ class Chess
         @board[7][0] = "_"
         @board[7][3] = "♖"
         @white_king_position = [7, 2]
-        pp @board[@white_king_position[1]][@white_king_position[0]]
       when "♚"
         @board[0][4] = "_"
         @board[0][2] = "♚"
@@ -790,14 +784,9 @@ class Chess
       end
 
     end
-    pp pieces_with_legal_moves
     @position = pieces_with_legal_moves.sample
-    pp @position
-
     self.identify_piece
-
     random_move = @valid_moves.sample
-    pp random_move
     self.make_move(random_move)
   end
 
