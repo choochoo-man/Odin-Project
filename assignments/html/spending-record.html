@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>My spending record</title>
+    <link href="minimal-table.css" rel="stylesheet" type="text/css">
+    <style>
+      tbody {
+        font-size: 95%;
+        font-style: italic;
+      }
+
+      tfoot {
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>My spending record</h1>
+
+      <table>
+        <caption>How I chose to spend my money</caption>
+        <thead>
+          <tr>
+            <th id="purchase" headers="purchase">Purchase</th>
+            <th id="location" headers="location">Location</th>
+            <th id="date" headers="date">Date</th>
+            <th id="evaluation" headers="evaluation">Evaluation</th>
+            <th id="cost" headers="cost">Cost (€)</th>
+          </tr>
+        </thead>
+        <tfoot>
+            <tr>
+              <td colspan="4">SUM</td>
+              <td>118</td>
+            </tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td headers="purchase">Haircut</td>
+              <td headers="location">Hairdresser</td>
+              <td headers="date">12/09</td>
+              <td headers="evaluation">Great idea</td>
+              <td headers="cost">30</td>
+            </tr>
+            <tr>
+              <td headers="purchase">Lasagna</td>
+              <td headers="location">Restaurant</td>
+              <td headers="date">12/09</td>
+              <td headers="evaluation">Regrets</td>
+              <td headers="cost">18</td>
+            </tr>
+            <tr>
+              <td headers="purchase">Shoes</td>
+              <td headers="location">Shoeshop</td>
+              <td headers="date">13/09</td>
+              <td headers="evaluation">Big regrets</td>
+              <td headers="cost">65</td>
+            </tr>
+            <tr>
+              <td headers="purchase">Toothpaste</td>
+              <td headers="location">Supermarket</td>
+              <td headers="date">13/09</td>
+              <td headers="evaluation">Good</td>
+              <td headers="cost">5</td>
+            </tr>
+          </tbody>
+    </table>
+
+  </body>
+</html>

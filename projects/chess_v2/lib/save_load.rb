@@ -16,8 +16,6 @@ module SaveLoad
     exit
   end
 
-
-
   def load_game
     puts Dir.entries("saves")
     save_files =[]
