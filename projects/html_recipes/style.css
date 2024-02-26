@@ -1,6 +1,7 @@
 body {
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     background-color: gray;
-    width: 50%;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
